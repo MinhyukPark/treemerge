@@ -1,4 +1,3 @@
-
 """"
 This file is a python prototype of TreeMerge from the paper:
 
@@ -14,6 +13,7 @@ see https://opensource.org/licenses/BSD-3-Clause
 
 import os
 import os.path
+import pickle
 import sys
 
 scriptpath = os.path.realpath(__file__)
@@ -569,6 +569,7 @@ def main(args):
     dmatfile = args.matrix
     taxafile = args.taxa
     workdir = args.workdir
+    mst_graph = args.mst
 
     # Build MST from starting tree
     ts = time.time()
@@ -577,7 +578,8 @@ def main(args):
     sys.stdout.write("...computed MST in %d seconds.\n" % rt)
 
     # Merge pairs of trees uing NJMerge
-    graph = networkx.Graph(mst)
+    # graph = networkx.Graph(mst)
+    graph = pickle.read_gpickle(mst_graph)
     trees = []
     for e in graph.edges():
         ts = time.time()
@@ -593,7 +595,10 @@ def main(args):
         tj = dendropy.Tree.get(path=tjfile, schema="newick")
 
         # Merge two trees using NJMerge
-        [dij, tij] = njmergepair.run(dmatfile, taxafile, ti, tj)
+        # [dij, tij] = njmergepair.run(dmatfile, taxafile, ti, tj)
+        lij = njmergepair.get_leaf_list(ti) + njmergepair.get_leaf_list(tj)
+        dij = njmergepair.read_mat_to_pdm(dmatfile, taxafile, lij)
+        tij = dendropy.Tree.get(path=tifile + "+" + tjfile + ".tree", schema="newick")
 
         # Add (non-negative) branch lengths with PAUP*
         tij.is_rooted = False
@@ -652,6 +657,10 @@ if __name__ == "__main__":
 
     parser.add_argument("-p", "--paup", type=str,
                         help="Path to PAUP* binary",
+                        required=True)
+
+    parser.add_argument("--mst", type=str,
+                        help="Path to minimum spanning tree graph",
                         required=True)
 
     parser.add_argument("-w", "--workdir", type=str,
