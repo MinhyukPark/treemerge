@@ -13,7 +13,7 @@ see https://opensource.org/licenses/BSD-3-Clause
 
 import os
 import os.path
-import pickle
+import ntpath
 import sys
 
 scriptpath = os.path.realpath(__file__)
@@ -579,7 +579,7 @@ def main(args):
 
     # Merge pairs of trees uing NJMerge
     # graph = networkx.Graph(mst)
-    graph = pickle.read_gpickle(mst_graph)
+    graph = networkx.read_gpickle(mst_graph)
     trees = []
     for e in graph.edges():
         ts = time.time()
@@ -598,7 +598,8 @@ def main(args):
         # [dij, tij] = njmergepair.run(dmatfile, taxafile, ti, tj)
         lij = njmergepair.get_leaf_list(ti) + njmergepair.get_leaf_list(tj)
         dij = njmergepair.read_mat_to_pdm(dmatfile, taxafile, lij)
-        tij = dendropy.Tree.get(path=tifile + "+" + tjfile + ".tree", schema="newick")
+        pair_tree_filename = ntpath.split(tifile)[1] + "+" + ntpath.split(tjfile)[1] + ".tree"
+        tij = dendropy.Tree.get(path=pair_tree_filename, schema="newick")
 
         # Add (non-negative) branch lengths with PAUP*
         tij.is_rooted = False

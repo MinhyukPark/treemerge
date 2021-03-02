@@ -1,8 +1,9 @@
+import ntpath
+
 import click
 import dendropy
 import networkx
 import numpy
-import pickle
 
 import njmerge2
 
@@ -22,9 +23,10 @@ def get_merge_list(starting_tree,  output_prefix, treefiles):
             i,j = current_edge
             tifile = treefiles[i]
             tjfile = treefiles[j]
-            f.write(tifile + "+" + tjfile)
+            pair_tree_filename = ntpath.split(tifile)[1] + "+" + ntpath.split(tjfile)[1] + ".tree"
+            f.write(pair_tree_filename)
             f.write("\n")
-    pickle.write_gpickle(graph, output_prefix + "mst")
+    networkx.write_gpickle(graph, output_prefix + "mst")
 
 
 if __name__ == "__main__":
