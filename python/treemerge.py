@@ -133,7 +133,7 @@ def add_branch_lengths_with_paup(paup, pdm, tree, nexfile, outfile):
         raise Exception("System call " + cmd +
                         " was unable to be performed!\n")
 
-    subprocess.call(["rm", nexfile])
+    # subprocess.call(["rm", nexfile])
 
 
 def set_zeros_to_half_shortest(tree):
@@ -551,6 +551,8 @@ def dscmcombine(workdir, trees, mstmat, outfile):
 
     with open(outfile, 'w') as f:
         f.write(combined_tree.as_string(schema="newick")[5:])
+    with open(outfile + "-raw", 'w') as f:
+        f.write(combined_tree.as_string(schema="newick"))
 
 
 
@@ -573,38 +575,53 @@ def main(args):
 
     # Build MST from starting tree
     ts = time.time()
-    mst = njmerge2.tree_to_mst(strefile, treefiles)
-    rt = time.time() - ts
-    sys.stdout.write("...computed MST in %d seconds.\n" % rt)
+    # mst = njmerge2.tree_to_mst(strefile, treefiles)
+    # rt = time.time() - ts
+    # sys.stdout.write("...computed MST in %d seconds.\n" % rt)
 
     # Merge pairs of trees uing NJMerge
     # graph = networkx.Graph(mst)
     graph = networkx.read_gpickle(mst_graph)
+    mst = networkx.to_numpy_matrix(graph)
+    mst[mst >  0] = 1
+    sys.stderr.write("loaded mst \n")
     trees = []
     for e in graph.edges():
-        ts = time.time()
+        # ts = time.time()
         i, j = e
 
         tifile = treefiles[i]
         tjfile = treefiles[j]
-        nexfile = name_nexspair_file(workdir, tifile, tjfile)
+        # nexfile = name_nexspair_file(workdir, tifile, tjfile)
         tijname = name_treepair_file("", tifile, tjfile)
         tijfile = workdir + "/" + tijname
 
-        ti = dendropy.Tree.get(path=tifile, schema="newick")
-        tj = dendropy.Tree.get(path=tjfile, schema="newick")
+        # ti = dendropy.Tree.get(path=tifile, schema="newick")
+        # tj = dendropy.Tree.get(path=tjfile, schema="newick")
 
         # Merge two trees using NJMerge
         # [dij, tij] = njmergepair.run(dmatfile, taxafile, ti, tj)
-        lij = njmergepair.get_leaf_list(ti) + njmergepair.get_leaf_list(tj)
-        dij = njmergepair.read_mat_to_pdm(dmatfile, taxafile, lij)
-        pair_tree_filename = ntpath.split(tifile)[1] + "+" + ntpath.split(tjfile)[1] + ".tree"
-        tij = dendropy.Tree.get(path=pair_tree_filename, schema="newick")
+        # sys.stderr.write("loaded individual trees \n")
+        # lij = njmergepair.get_leaf_list(ti) + njmergepair.get_leaf_list(tj)
+        # sys.stderr.write("loaded leaf list \n")
+        # t_start = time.time()
+        # dij = njmergepair.read_mat_to_pdm(dmatfile, taxafile, lij)
+        # t_elapsed = time.time() - t_start
+        # sys.stderr.write("loaded mat to pdm %d seconds \n" % t_elapsed)
+        # pair_tree_filename = tifile + "+" + tjfile + ".tree"
+        # tij = dendropy.Tree.get(path=tijfile, schema="newick")
+        # sys.stderr.write("loaded pair tree \n")
 
         # Add (non-negative) branch lengths with PAUP*
-        tij.is_rooted = False
-        tij.collapse_basal_bifurcation(set_as_unrooted_tree=True)
-        add_branch_lengths_with_paup(paup, dij, tij, nexfile, tijname)
+        # tij.is_rooted = False
+        # t_start = time.time()
+        # tij.collapse_basal_bifurcation(set_as_unrooted_tree=True)
+        # t_elapsed = time.time() - t_start
+        # sys.stderr.write("collapsed basal bifurication %d seconds \n" % t_elapsed)
+        # t_start = time.time()
+        # add_branch_lengths_with_paup(paup, dij, tij, nexfile, tijname)
+        # t_elapsed = time.time() - t_start
+        # sys.stderr.write("added branch lengths with paup %d seconds \n" % t_elapsed)
         try:
             with open(tijfile, 'r'):
                 pass
@@ -613,11 +630,11 @@ def main(args):
                             "check if PAUP* binary has expired!\n")
 
         # Set branches with length 0 to 1/2 shortest branch
-        tij = dendropy.Tree.get(path=tijfile, schema="nexus")
+        tij = dendropy.Tree.get(path=tijfile, schema="newick")
         tij = set_zeros_to_half_shortest(tij)
 
-        for l in tij.leaf_nodes():
-            l.taxon.label = l.taxon.label.replace("paupsafe", "")
+        # for l in tij.leaf_nodes():
+            # l.taxon.label = l.taxon.label.replace("paupsafe", "")
 
         ## Write tree
         with open(tijfile, 'w') as f:
