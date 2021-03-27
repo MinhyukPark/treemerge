@@ -27,13 +27,14 @@ def get_merge_list(starting_tree,  output_prefix, treefiles):
             tjfile = treefiles[j]
             pair_tree_filename = treemerge.name_treepair_file(output_prefix, tifile, tjfile)
             # pair_tree_filename = tifile + "+" + tjfile + ".tree"
-            first_fasta = tifile[:-9] + ".out"
-            second_fasta = tjfile[:-9] + ".out"
+            first_fasta = tifile[:-9] + ".out" # change to .fas for paul's randhetcentro10 data
+            second_fasta = tjfile[:-9] + ".out" # change to .fas for paul's randhetcentro10 data
             merged_fasta_filename = pair_tree_filename + ".fasta"
             with open(merged_fasta_filename, "w") as fw:
                 with open(first_fasta, "r") as ff:
                     for line in ff:
                         fw.write(line)
+                fw.write("\n") # Paul's randhetcentro10 doesn't have a linebreak at the end of the file so this is needed
                 with open(second_fasta, "r") as fs:
                     for line in fs:
                         fw.write(line)

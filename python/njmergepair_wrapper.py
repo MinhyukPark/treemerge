@@ -26,7 +26,7 @@ def njmergepair_wrapper(starting_tree, first_tree, second_tree, node_distance_ma
 
     pair_tree_dendropy.resolve_polytomies()
     pair_tree_dendropy.update_bipartitions()
-    pair_tree_dendropy.write(path=output_prefix + ".njmerge", schema="newick", suppress_rooting=True)
+    pair_tree_dendropy.write(path=output_prefix, schema="newick", suppress_rooting=True)
 
 if __name__ == "__main__":
     njmergepair_wrapper()

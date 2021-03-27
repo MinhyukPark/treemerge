@@ -541,6 +541,8 @@ def dscmcombine(workdir, trees, mstmat, outfile):
                                                   schema="newick")
             else:
                 tij = dendropy.Tree.get(path=tijfile, schema="newick")
+                sys.stderr.write("ti:" + str(trees[i]) + "\n")
+                sys.stderr.write("tj:" + str(trees[j]) + "\n")
                 combine_two_trees_via_dscm(tij, combined_tree)
                 combined_tree.update_bipartitions()
 
