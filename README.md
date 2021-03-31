@@ -1,38 +1,30 @@
-TreeMerge
-=======
-TreeMerge is a tool for scaling phylogengy estimation methods to large datasets. TreeMerge can be used in a divide-and-conquer framework as follows: 1) divide the species set into disjoint subsets, 2) construct trees on each subset, and 3) combine the subset trees using an associated distance matrix (on the full species set). TreeMerge has been sucessfully tested in the context of species tree estimation (Molloy and Warnow, 2019).
+# TreeMerge
+---
 
+This repository contains scripts for generating pair-wise merged tree files and a new entry point to [TreeMerge](https://github.com/ekmolloy/treemerge) with additional input files.
 
-REQUIREMENTS
-------------
-+ Python 2.7 or later
-+ [DendroPy](https://www.dendropy.org) 4.3.0
-+ [PAUP*](http://phylosolutions.com/paup-test/) 4
+Here is an overview of each script. For the full command line reference, you can also run the python files with the --help flag.
 
+### get\_merge\_list.py
+This file is used to generate a minimum spanning tree as well as to generate a file which defines which pairs of trees must be merged together in order for TreeMerge to ingest them.
+'''
+python get\_merge\_list.py --starting-tree <input tree> --output-prefix <output prefix> -- <space separated list of constraint trees>
+'''
 
-TUTORIAL
---------
-+ [Slides](http://erinkmolloy.web.illinois.edu/ekm-trees19.pdf)
-+ [Hands-on Worksheet](https://github.com/ekmolloy/trees-in-the-desert-tutorial)
+### setup\_merger.py
+This file is used to compute the induced starting trees needed for the pair-wise mergers
+'''
+python setup\_merger.py --starting-tree <input tree> --files-needed <output named files_needed from get_merge_list.py> --output-prefix <output prefix> --merger-choice njmerge --guide-choide induced
+'''
 
+### run\_merger.py
+This file is used to run the pair-wise mergers and create pair-wise merged trees
+'''
+python run\_merger.py --starting-tree <input tree> --files-needed <output named files_needed from get_merge_list.py> --output-prefix <output prefix> --merger-choice njmerge --guide-choice induced
+'''
 
-CHANGES
--------
-If subsets are created by deleting edges from a starting tree, then the starting tree can be used to define the spanning tree on subsets given to TreeMerge as input. TreeMerge no longer uses the method described in Section 3.3 for deriving the spanning tree on subsets from a starting tree; it now uses the approach described in Theorem 9, but modified to handle the special case where edges that are less than two edges apart in the starting tree are deleted.
-
-
-CITATION
---------
-```
-@article{MolloyWarnow2019,
-    author={Erin Molloy and Tandy Warnow},
-    title={{TreeMerge: A new method for improving the scalability of species tree estimation methods}},
-    year={2019},
-    journal={Bioinformatics},
-    note={in press}
-}
-```
-
-LICENSE
--------
-Please see [LICENSE.txt](LICENSE.txt) for details.
+### treemerge.py
+This file is the original treemerge that was modified to take in a predetermined minimum spanning tree. It expects the pair-wise trees to already have been computed on the input minimum spanning tree with ther branch lengths already estimated.
+'''
+python treemerge.py -s <input tree> -m <input matrix> -x <input matrix taxon list> -o <output prefix> -p <paup binary> -w <working directory> --mst <minimum spannig tree> -t <space separated list of constrait trees>
+'''
