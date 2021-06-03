@@ -7,7 +7,7 @@ import click
 import dendropy
 import numpy
 
-QUICKSCRIPTS = "/opt/QuickScripts/"
+QUICKSCRIPTS = "./QuickScripts/"
 
 try:
     import njmergepair
@@ -36,7 +36,7 @@ def run_merger(merger_choice, first_tree, second_tree, pair_tree_filename):
     with open(pair_tree_filename + merger_suffix + ".out", "w") as stdout_f:
         with open(pair_tree_filename + merger_suffix + ".err", "w") as stderr_f:
             if(merger_choice == "gtm"):
-                subprocess.call(["/usr/bin/time", "-v", "python", "/opt/GTM/gtm.py", "-s", current_starting_tree, "-o", pair_tree_filename + merger_suffix + ".raw", "-t", first_tree, second_tree], stdout=stdout_f, stderr=stderr_f)
+                subprocess.call(["/usr/bin/time", "-v", "python", "./GTM/gtm.py", "-s", current_starting_tree, "-o", pair_tree_filename + merger_suffix + ".raw", "-t", first_tree, second_tree], stdout=stdout_f, stderr=stderr_f)
                 with open(pair_tree_filename + merger_suffix + ".resolve.out", "w") as resolve_stdout_f:
                     with open(pair_tree_filename + merger_suffix + ".resolve.err", "w") as resolve_stderr_f:
                         subprocess.call(["/usr/bin/time", "-v", "python", QUICKSCRIPTS + "resolve_tree.py", "--input-tree", pair_tree_filename + merger_suffix + ".raw", "--output-file", pair_tree_filename + merger_suffix, "--hide-prefix"], stdout=resolve_stdout_f, stderr=resolve_stderr_f)
@@ -53,7 +53,7 @@ def run_merger(merger_choice, first_tree, second_tree, pair_tree_filename):
                     subprocess.call(["cp", current_starting_tree, current_starting_tree_dup])
                     subprocess.call(["/usr/bin/time", "-v", "constraint_inc", "-i", node_distance_matrix, "-o", pair_tree_filename + merger_suffix,  "-q", "subtree", "-g", current_starting_tree_dup, "-t", first_tree_dup, second_tree_dup], stdout=stdout_f, stderr=stderr_f)
                 elif(merger_choice == "njmerge"):
-                    subprocess.call(["/usr/bin/time", "-v", "python", "/u/sciteam/minhyuk2/git_repos/treemerge/python/njmergepair_wrapper.py", "--starting-tree", current_starting_tree, "--first-tree", first_tree, "--second-tree", second_tree, "--node-distance-matrix", node_distance_matrix, "--output-prefix", pair_tree_filename + merger_suffix], stdout=stdout_f, stderr=stderr_f)
+                    subprocess.call(["/usr/bin/time", "-v", "python", "./njmergepair_wrapper.py", "--starting-tree", current_starting_tree, "--first-tree", first_tree, "--second-tree", second_tree, "--node-distance-matrix", node_distance_matrix, "--output-prefix", pair_tree_filename + merger_suffix], stdout=stdout_f, stderr=stderr_f)
             # subprocess.call(["python", QUICKSCRIPTS + "resolve_tree.py", "--input-tree", pair_tree_filename + merger_suffix, "--output-file", pair_tree_filename + merger_suffix + ".resolved", "--hide-prefix"])
             pair_tree_dendropy = dendropy.Tree.get(path=pair_tree_filename + merger_suffix, schema="newick")
             pair_tree_dendropy.is_rooted = False
@@ -98,11 +98,11 @@ def run_merger_and_raxml(starting_tree, files_needed, merger_choice, guide_choic
             merger_args_arr.append((merger_choice, first_tree, second_tree, pair_tree_filename))
             raxml_args_arr.append((merger_choice, pair_fasta, pair_tree_filename))
 
-    pool = Pool(processes=30)
+    pool = Pool(processes=2)
     pool.map(run_merger_wrapper, merger_args_arr)
     pool.close()
 
-    pool = Pool(processes=15)
+    pool = Pool(processes=2)
     pool.map(run_raxml_wrapper, raxml_args_arr)
     pool.close()
 
